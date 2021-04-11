@@ -7,10 +7,19 @@
       isLoading: false,
       isInitialized: false,
       snakeSize: 5,
-      lastPressedBtn: 'up',
+      currentAxis: 'y',
+      lastAxis: 'y',
+      axisChanged: false,
     }),
     created() {
       window.addEventListener('keyup', (e) => {
+        this.lastAxis = this.currentAxis;
+
+        if (e.which === 37 || e.which === 39) this.currentAxis = 'x';
+        else if (e.which === 38 || e.which === 40) this.currentAxis = 'y';
+
+        if (this.currentAxis !== this.lastAxis) this.axisChanged = true;
+
         if (e.which === 37) this.keyPressed('left');
         if (e.which === 38) this.keyPressed('up');
         if (e.which === 39) this.keyPressed('right');
@@ -65,11 +74,11 @@
         this.isInitialized = true;
       },
       keyPressed(pressedBtn) {
+        
         this.setHeadOfSnake(this.findNewHeadOrFootOfSnake(pressedBtn, 'head'));
         this.setFootOfSnake(this.findNewHeadOrFootOfSnake(pressedBtn, 'foot'));
       },
       findNewHeadOrFootOfSnake(pressedBtn, type) {
-        this.lastPressedBtn = pressedBtn;
         const oldVal = type === 'head' ? this.headOfSnake : this.footOfSnake;
 
         switch (pressedBtn) {
@@ -79,7 +88,14 @@
             return this.items
           .find(i => (i.row === oldVal.row - 1) && (i.col === oldVal.col));
           case 'right':
-            break;
+            if (this.axisChanged && type === 'foot') {
+              // this.axisChanged = false;
+              return this.items
+                .find(i => (i.row === oldVal.row - 1) && (i.col === oldVal.col));
+            } else {
+              return this.items
+            .find(i => (i.row === oldVal.row) && (i.col === oldVal.col + 1));
+            }
           case 'down':
             return this.items
           .find(i => (i.row === oldVal.row + 1) && (i.col === oldVal.col));
@@ -92,15 +108,16 @@
         newHeadOfSnake.isHead = true;
       },
       setFootOfSnake(newFootOfSnake) {
+        console.log(newFootOfSnake);
         /* Note: If you change isFoot props first, computed will re-render.
         So second line this.footOfSnake will undefined */
         this.footOfSnake.status = false;
         this.footOfSnake.isFoot = false;
-        newFootOfSnake.status = true;
+        // newFootOfSnake.status = true;
         newFootOfSnake.isFoot = true;
       },
       asdf(item) {
-        console.log(item);
+        console.log(item.isFoot);
       },
     },
   }
