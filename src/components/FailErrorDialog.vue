@@ -1,6 +1,12 @@
 <script>
 export default {
   name: 'FailErrorDialog',
+  props: {
+    score: {
+      type: Number,
+      default: 0,
+    },
+  },
   data: () => ({
     visible: false,
   }),
@@ -29,7 +35,7 @@ export default {
       <v-card-text>
         <h1>GAME OVER</h1>
         <br>
-        <h2>Your Score: <b>123</b> </h2>
+        <h2>Your Score: <b>{{ score }}</b> </h2>
       </v-card-text>
 
       <v-card-actions>
