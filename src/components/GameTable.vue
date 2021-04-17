@@ -91,7 +91,7 @@
       },
       generateFood() {
         const randomRow = Math.floor(Math.random() * 20);
-        const randomCol = Math.floor(Math.random() * 25) + 1; // Shouldn't create first col. Its starting column
+        const randomCol = Math.floor(Math.random() * 24) + 1; // Shouldn't create first col. Its starting column
 
         const foundedItem = this.items.find(i => i.row === randomRow && i.col === randomCol);
 
