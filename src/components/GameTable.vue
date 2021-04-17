@@ -130,7 +130,7 @@
 
         this.startInterval = setInterval(function(){
             vm.keyPressed(vm.lastPressedKey, 'interval');
-        }, 250);
+        }, 200);
       },
       generateFood() {
         const randomRow = Math.floor(Math.random() * 20);
@@ -153,12 +153,12 @@
 
 <template>
   <v-container>
-    <v-layout row wrap>
-        <v-progress-linear
-          v-if="isLoading || !isInitialized"
-          indeterminate
-          color="yellow darken-2"
-        />
+    <v-layout row class="game-table">
+      <v-progress-linear
+        v-if="isLoading || !isInitialized"
+        indeterminate
+        color="yellow darken-2"
+      />
 
       <template v-else>
         <v-switch
@@ -171,3 +171,10 @@
     </v-layout>
   </v-container>
 </template>
+
+<style scope lang="scss">
+  .game-table {
+    margin: auto !important;
+    width: 1150px;
+  }
+</style>
