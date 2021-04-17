@@ -1,3 +1,14 @@
+<script>
+import GameTable from './components/GameTable';
+
+export default {
+  name: 'App',
+  components: {
+    GameTable,
+  },
+};
+</script>
+
 <template>
   <v-app>
     <v-app-bar
@@ -38,23 +49,7 @@
     </v-app-bar>
 
     <v-main>
-      <HelloWorld/>
+      <GameTable />
     </v-main>
   </v-app>
 </template>
-
-<script>
-import HelloWorld from './components/HelloWorld';
-
-export default {
-  name: 'App',
-
-  components: {
-    HelloWorld,
-  },
-
-  data: () => ({
-    //
-  }),
-};
-</script>
