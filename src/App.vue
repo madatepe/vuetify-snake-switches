@@ -9,6 +9,7 @@ export default {
   data: () => ({
     onPlay: false,
     score: 0,
+    gameTableVisible: true,
   }),
   created() {
     window.addEventListener('keyup', (e) => {
@@ -20,6 +21,14 @@ export default {
   methods: {
     increaseScore() {
       this.score += 5;
+    },
+    restartGame() {
+      this.gameTableVisible = false,
+      this.onPlay = false,
+      this.score = 0;
+      this.$nextTick(() => {
+        this.gameTableVisible = true;
+      });
     },
   },
 };
@@ -59,12 +68,19 @@ export default {
 
         <v-flex shrink>
           <v-btn
+            @click="restartGame"
             color="blue-grey darken-1"
             large depressed dark
           >
             <v-icon x-large>mdi-restart</v-icon>
             RESTART
           </v-btn>
+        </v-flex>
+
+        <v-spacer />
+
+        <v-flex shrink>
+          You can press SPACE for {{ onPlay ? 'PAUSE' : 'PLAY' }}
         </v-flex>
 
         <v-spacer />
@@ -86,6 +102,7 @@ export default {
 
     <v-main>
       <GameTable
+        v-if="gameTableVisible"
         :on-play="onPlay"
         @increaseScore="increaseScore"
       />
