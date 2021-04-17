@@ -6,37 +6,35 @@
       items: [],
       isLoading: false,
       isInitialized: false,
-      snakeSize: 5,
-      currentAxis: 'y',
-      lastAxis: 'y',
-      axisChanged: false,
+      snakeItems: [],
+      snakeSize: 6,
+      lastPressedKey: 'up',
+      startInterval: null,
     }),
     created() {
       window.addEventListener('keyup', (e) => {
-        this.lastAxis = this.currentAxis;
-
-        if (e.which === 37 || e.which === 39) this.currentAxis = 'x';
-        else if (e.which === 38 || e.which === 40) this.currentAxis = 'y';
-
-        if (this.currentAxis !== this.lastAxis) this.axisChanged = true;
-
-        if (e.which === 37) this.keyPressed('left');
-        if (e.which === 38) this.keyPressed('up');
-        if (e.which === 39) this.keyPressed('right');
-        if (e.which === 40) this.keyPressed('down');
+        if (e.which === 37) this.keyPressed('left', 'keyListener');
+        if (e.which === 38) this.keyPressed('up', 'keyListener');
+        if (e.which === 39) this.keyPressed('right', 'keyListener');
+        if (e.which === 40) this.keyPressed('down', 'keyListener');
       });
     },
     mounted() {
       console.log('mounted');
       this.generateSwitches();
+      this.generateFood();
+      this.start();
+    },
+    beforeDestroy () {
+       clearInterval(this.startInterval)
     },
     computed: {
       headOfSnake() {
         return this.items.find(i => i.isHead === true);
       },
-      footOfSnake() {
-        return this.items.find(i => i.isFoot === true);
-      }, 
+      currentFood() {
+        return this.items.find(i => i.isFood === true);
+      },
     },
     methods: {
       generateSwitches() {
@@ -49,7 +47,7 @@
             row: (Math.floor(i / 25)) + 1,
             status: false,
             isHead: false,
-            isFoot: false,
+            isFood: false,
           };
 
           // This condition for rows last elements
@@ -63,39 +61,53 @@
               tempItem.status = true;
 
               if (tempItem.row === 15) tempItem.isHead = true;
-              if (tempItem.row === 20) tempItem.isFoot = true;
             }
           }
 
           this.items.push(tempItem);
         }
 
+        // This sorting is important for last element 
+        this.snakeItems.push(this.items[350]);
+        this.snakeItems.push(this.items[375]);
+        this.snakeItems.push(this.items[400]);
+        this.snakeItems.push(this.items[425]);
+        this.snakeItems.push(this.items[450]);
+        this.snakeItems.push(this.items[475]);
+
         this.isLoading = false;
         this.isInitialized = true;
       },
-      keyPressed(pressedBtn) {
-        
-        this.setHeadOfSnake(this.findNewHeadOrFootOfSnake(pressedBtn, 'head'));
-        this.setFootOfSnake(this.findNewHeadOrFootOfSnake(pressedBtn, 'foot'));
+      keyPressed(pressedBtn, from) {
+        if (this.headOfSnake && this.currentFood
+        && this.headOfSnake.row === this.currentFood.row
+        && this.headOfSnake.col === this.currentFood.col) {
+          this.snakeSize += 1;
+          this.generateFood();
+        }
+
+        if (from === 'interval') {
+          this.setHeadOfSnake(this.findNewHeadOfSnake(pressedBtn));
+          this.lastPressedKey = pressedBtn;
+        } else if (((this.lastPressedKey === 'up' || this.lastPressedKey === 'down')&& pressedBtn !== 'down' && pressedBtn !== 'up')
+        || ((this.lastPressedKey === 'left' || this.lastPressedKey === 'right') && pressedBtn !== 'left' && pressedBtn !== 'right')) {
+          this.setHeadOfSnake(this.findNewHeadOfSnake(pressedBtn));
+          this.lastPressedKey = pressedBtn;
+        }
       },
-      findNewHeadOrFootOfSnake(pressedBtn, type) {
-        const oldVal = type === 'head' ? this.headOfSnake : this.footOfSnake;
+      findNewHeadOfSnake(pressedBtn) {
+        const oldVal = this.headOfSnake;
 
         switch (pressedBtn) {
           case 'left':
-            break;
+            return this.items
+          .find(i => (i.row === oldVal.row) && (i.col === oldVal.col - 1));
           case 'up':
             return this.items
           .find(i => (i.row === oldVal.row - 1) && (i.col === oldVal.col));
           case 'right':
-            if (this.axisChanged && type === 'foot') {
-              // this.axisChanged = false;
-              return this.items
-                .find(i => (i.row === oldVal.row - 1) && (i.col === oldVal.col));
-            } else {
-              return this.items
-            .find(i => (i.row === oldVal.row) && (i.col === oldVal.col + 1));
-            }
+            return this.items
+          .find(i => (i.row === oldVal.row) && (i.col === oldVal.col + 1));
           case 'down':
             return this.items
           .find(i => (i.row === oldVal.row + 1) && (i.col === oldVal.col));
@@ -106,18 +118,34 @@
         this.headOfSnake.isHead = false;
         newHeadOfSnake.status = true;
         newHeadOfSnake.isHead = true;
+        this.snakeItems.unshift(newHeadOfSnake);
+
+        if (this.snakeSize < this.snakeItems.length - 1) {
+          this.snakeItems[this.snakeItems.length - 1].status = false;
+          this.snakeItems.pop();
+        }
       },
-      setFootOfSnake(newFootOfSnake) {
-        console.log(newFootOfSnake);
-        /* Note: If you change isFoot props first, computed will re-render.
-        So second line this.footOfSnake will undefined */
-        this.footOfSnake.status = false;
-        this.footOfSnake.isFoot = false;
-        // newFootOfSnake.status = true;
-        newFootOfSnake.isFoot = true;
+      start() {
+        const vm = this;
+
+        this.startInterval = setInterval(function(){
+            vm.keyPressed(vm.lastPressedKey, 'interval');
+        }, 250);
       },
-      asdf(item) {
-        console.log(item.isFoot);
+      generateFood() {
+        const randomRow = Math.floor(Math.random() * 20);
+        const randomCol = Math.floor(Math.random() * 25) + 1; // Shouldn't create first col. Its starting column
+
+        const foundedItem = this.items.find(i => i.row === randomRow && i.col === randomCol);
+        console.log(foundedItem);
+
+        if (foundedItem.status === true) {
+          this.generateFood();
+        } else {
+          if (this.currentFood) this.currentFood.isFood = false;
+          foundedItem.isFood = true;
+          foundedItem.status = true;
+        }
       },
     },
   }
@@ -126,7 +154,6 @@
 <template>
   <v-container>
     <v-layout row wrap>
-        <!-- {{ items.map((i) => { if(i.status === true) return i.swNo || 'a'; }) }} -->
         <v-progress-linear
           v-if="isLoading || !isInitialized"
           indeterminate
@@ -137,11 +164,9 @@
         <v-switch
           v-for="item in items" :key="item.swNo"
           v-model="item.status"
-          :color="item.isHead ? 'green' : 'primary'"
+          :color="item.isHead ? 'green' : item.isFood ? 'red' : 'primary'"
           hide-details
-          @change="asdf(item)"
         />
-          <!-- :label="item.swNo.toString()" -->
       </template>
     </v-layout>
   </v-container>
