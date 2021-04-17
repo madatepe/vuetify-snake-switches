@@ -1,19 +1,22 @@
 <script>
 import GameTable from './components/GameTable';
+import FailErrorDialog from './components/FailErrorDialog';
 
 export default {
   name: 'App',
   components: {
     GameTable,
+    FailErrorDialog,
   },
   data: () => ({
     onPlay: false,
     score: 0,
     gameTableVisible: true,
+    failErrorDialogVisible: false,
   }),
   created() {
     window.addEventListener('keyup', (e) => {
-      if (e.which === 32) {
+      if (e.which === 32 && this.failErrorDialogVisible === false) {
         this.onPlay = !this.onPlay;
       }
     });
@@ -80,7 +83,7 @@ export default {
         <v-spacer />
 
         <v-flex shrink>
-          You can press SPACE for {{ onPlay ? 'PAUSE' : 'PLAY' }}
+          <h4>You can press SPACE for {{ onPlay ? 'PAUSE' : 'PLAY' }}</h4>
         </v-flex>
 
         <v-spacer />
@@ -105,7 +108,14 @@ export default {
         v-if="gameTableVisible"
         :on-play="onPlay"
         @increaseScore="increaseScore"
+        @failError="failErrorDialogVisible = true; onPlay = false;"
       />
     </v-main>
+
+    <FailErrorDialog
+      v-if="failErrorDialogVisible"
+      :score="score"
+      @closed="failErrorDialogVisible = false; restartGame();"
+    />
   </v-app>
 </template>

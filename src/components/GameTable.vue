@@ -142,14 +142,18 @@
         } 
       },
       setHeadOfSnake(newHeadOfSnake) {
-        this.headOfSnake.isHead = false;
-        newHeadOfSnake.status = true;
-        newHeadOfSnake.isHead = true;
-        this.snakeItems.unshift(newHeadOfSnake);
-
-        if (this.snakeSize < this.snakeItems.length - 1) {
-          this.snakeItems[this.snakeItems.length - 1].status = false;
-          this.snakeItems.pop();
+        if (newHeadOfSnake && !(this.snakeItems.find(si => si.swNo === newHeadOfSnake.swNo))) {
+          this.headOfSnake.isHead = false;
+          newHeadOfSnake.status = true;
+          newHeadOfSnake.isHead = true;
+          this.snakeItems.unshift(newHeadOfSnake);
+  
+          if (this.snakeSize < this.snakeItems.length - 1) {
+            this.snakeItems[this.snakeItems.length - 1].status = false;
+            this.snakeItems.pop();
+          }
+        } else {
+          this.failError();
         }
       },
       snakeRun() {
@@ -161,6 +165,9 @@
       },
       snakeStop() {
         clearInterval(this.startInterval);
+      },
+      failError() {
+        this.$emit('failError');
       },
     },
   }
