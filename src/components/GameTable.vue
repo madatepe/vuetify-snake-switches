@@ -1,5 +1,4 @@
 <script>
-/* eslint-disable */
   export default {
     name: 'GameTable',
     props: {
