@@ -1,7 +1,13 @@
 <script>
 /* eslint-disable */
   export default {
-    name: 'HelloWorld',
+    name: 'GameTable',
+    props: {
+      onPlay: {
+        type: Boolean,
+        required: true,
+      },
+    },
     data: () => ({
       items: [],
       isLoading: false,
@@ -11,23 +17,6 @@
       lastPressedKey: 'up',
       startInterval: null,
     }),
-    created() {
-      window.addEventListener('keyup', (e) => {
-        if (e.which === 37) this.keyPressed('left', 'keyListener');
-        if (e.which === 38) this.keyPressed('up', 'keyListener');
-        if (e.which === 39) this.keyPressed('right', 'keyListener');
-        if (e.which === 40) this.keyPressed('down', 'keyListener');
-      });
-    },
-    mounted() {
-      console.log('mounted');
-      this.generateSwitches();
-      this.generateFood();
-      this.start();
-    },
-    beforeDestroy () {
-       clearInterval(this.startInterval)
-    },
     computed: {
       headOfSnake() {
         return this.items.find(i => i.isHead === true);
@@ -35,6 +24,29 @@
       currentFood() {
         return this.items.find(i => i.isFood === true);
       },
+    },
+    watch: {
+      onPlay(newVal) {
+        if (newVal) this.snakeRun();
+        else this.snakeStop();
+      },
+    },
+    created() {
+      window.addEventListener('keyup', (e) => {
+        if (this.onPlay) {
+          if (e.which === 37) this.keyPressed('left', 'keyListener');
+          if (e.which === 38) this.keyPressed('up', 'keyListener');
+          if (e.which === 39) this.keyPressed('right', 'keyListener');
+          if (e.which === 40) this.keyPressed('down', 'keyListener');
+        } 
+      });
+    },
+    mounted() {
+      this.generateSwitches();
+      this.generateFood();
+    },
+    beforeDestroy () {
+      clearInterval(this.startInterval);
     },
     methods: {
       generateSwitches() {
@@ -78,11 +90,26 @@
         this.isLoading = false;
         this.isInitialized = true;
       },
+      generateFood() {
+        const randomRow = Math.floor(Math.random() * 20);
+        const randomCol = Math.floor(Math.random() * 25) + 1; // Shouldn't create first col. Its starting column
+
+        const foundedItem = this.items.find(i => i.row === randomRow && i.col === randomCol);
+
+        if (foundedItem.status === true) {
+          this.generateFood();
+        } else {
+          if (this.currentFood) this.currentFood.isFood = false;
+          foundedItem.isFood = true;
+          foundedItem.status = true;
+        }
+      },
       keyPressed(pressedBtn, from) {
         if (this.headOfSnake && this.currentFood
         && this.headOfSnake.row === this.currentFood.row
         && this.headOfSnake.col === this.currentFood.col) {
           this.snakeSize += 1;
+          this.$emit('increaseScore');
           this.generateFood();
         }
 
@@ -125,27 +152,15 @@
           this.snakeItems.pop();
         }
       },
-      start() {
+      snakeRun() {
         const vm = this;
 
         this.startInterval = setInterval(function(){
             vm.keyPressed(vm.lastPressedKey, 'interval');
-        }, 200);
+        }, 175);
       },
-      generateFood() {
-        const randomRow = Math.floor(Math.random() * 20);
-        const randomCol = Math.floor(Math.random() * 25) + 1; // Shouldn't create first col. Its starting column
-
-        const foundedItem = this.items.find(i => i.row === randomRow && i.col === randomCol);
-        console.log(foundedItem);
-
-        if (foundedItem.status === true) {
-          this.generateFood();
-        } else {
-          if (this.currentFood) this.currentFood.isFood = false;
-          foundedItem.isFood = true;
-          foundedItem.status = true;
-        }
+      snakeStop() {
+        clearInterval(this.startInterval);
       },
     },
   }
