@@ -6,50 +6,89 @@ export default {
   components: {
     GameTable,
   },
+  data: () => ({
+    onPlay: false,
+    score: 0,
+  }),
+  created() {
+    window.addEventListener('keyup', (e) => {
+      if (e.which === 32) {
+        this.onPlay = !this.onPlay;
+      }
+    });
+  },
+  methods: {
+    increaseScore() {
+      this.score += 5;
+    },
+  },
 };
 </script>
 
 <template>
   <v-app>
     <v-app-bar
-      app
-      color="primary"
-      dark
+      app dark color="primary"
     >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
+      <v-layout row wrap
+                align-center
+                justify-space-between>
+        <v-flex shrink px-1>
+          <v-btn
+            @click="onPlay = true"
+            color="success"
+            x-large depressed dark
+            :disabled="onPlay"
+          >
+            <v-icon x-large>mdi-play</v-icon>
+            PLAY
+          </v-btn>
+        </v-flex>
 
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
+        <v-flex shrink px-3>
+          <v-btn
+            @click="onPlay = false"
+            color="orange"
+            large depressed dark
+            :disabled="!onPlay"
+          >
+            <v-icon x-large>mdi-pause</v-icon>
+            PAUSE
+          </v-btn>
+        </v-flex>
 
-      <v-spacer></v-spacer>
+        <v-flex shrink>
+          <v-btn
+            color="blue-grey darken-1"
+            large depressed dark
+          >
+            <v-icon x-large>mdi-restart</v-icon>
+            RESTART
+          </v-btn>
+        </v-flex>
 
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
+        <v-spacer />
+
+        <v-flex shrink>
+          <v-chip
+            class="ma-2"
+            color="white"
+            large outlined
+          >
+          <v-icon large color="amber" left>
+            mdi-fire
+          </v-icon>
+            <h2>SCORE: {{ score }}</h2>
+          </v-chip>
+        </v-flex>
+      </v-layout>
     </v-app-bar>
 
     <v-main>
-      <GameTable />
+      <GameTable
+        :on-play="onPlay"
+        @increaseScore="increaseScore"
+      />
     </v-main>
   </v-app>
 </template>
